@@ -1,0 +1,54 @@
+name: Hexo pages
+
+on:
+  push:
+    branches:
+      - main  # 当推送到 main 分支时触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: false  # 禁用子模块检查
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 安装hexo
+        run: |
+          npm install hexo-deployer-git --save
+          npm install hexo-cli -g
+          npm install --save hexo-blog-encrypt
+          npm install hexo-renderer-pug hexo-renderer-stylus
+          npm install hexo-generator-search --save
+          npm install hexo-wordcount hexo-symbols-count-time --save
+      - name: 创建blog页面
+        run: |
+          git clone -b master https://github.com/PenosExt/butterfly.git themes/butterfly
+          hexo clean
+          hexo generate
+          ls
+
+      - name: 设置Git配置
+        run: |
+          git config --global user.name 'wyxdlz54188'
+          git config --global user.email 'liyuqili_1379zi@qq.com'
+          
+      - name: 推送到 GitHub Pages
+        run: |
+         cd public
+         git init
+         git add .
+         git commit -m "通过工作流创建"
+         git remote add origin https://${{ secrets.GH_TOKEN }}@github.com/PenosExt/hexobak.git
+         git push origin HEAD:gh-pages -f
+         
